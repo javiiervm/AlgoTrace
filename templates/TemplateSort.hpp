@@ -20,11 +20,12 @@ private:
     size_t currentIndex = 0;       // The primary bar currently being checked (Cyan)
     size_t secondaryIndex = 0;     // (Optional) A secondary bar being compared
     
-    // --- 2. CODE ANIMATION VARIABLES ---
-    // These handle the pseudo-code box at the bottom.
+    // --- 2. CODE ANIMATION & AUDIO VARIABLES ---
+    // These handle the pseudo-code box at the bottom and the sound effects.
     std::vector<std::string> pseudoCode; 
     int currentCodeLine = 0;             
-    int stepState = 0; // State machine tracker to pause execution line-by-line
+    int stepState = 0;         // State machine tracker to pause execution line-by-line
+    bool is_modifying = false; // Flag to trigger the special "swap/eliminate" sound
 
     // --- 3. ALGORITHM SPECIFIC VARIABLES ---
     // [ADD YOUR VARIABLES HERE]
@@ -54,6 +55,9 @@ public:
     
     // Returns the line of code currently being executed (0-indexed)
     int getCurrentCodeLine() const override { return currentCodeLine; }
+    
+    // Tells the audio engine if we are currently modifying the array (for the special beep)
+    bool isModifying() const override { return is_modifying; }
     
     // (Optional) Override this if your algorithm eliminates bars (like Stalin Sort)
     // bool isEliminated(size_t index) const override { return false; }

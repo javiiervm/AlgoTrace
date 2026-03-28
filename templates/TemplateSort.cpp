@@ -30,6 +30,9 @@ TemplateSort::TemplateSort(std::vector<int>& d) : Algorithm(d) {
 }
 
 void TemplateSort::step() {
+    // Reset the audio modification flag at the beginning of every step
+    is_modifying = false; 
+
     // Safety check: If already sorted, do nothing.
     if (completed) return;
 
@@ -76,6 +79,9 @@ void TemplateSort::step() {
         
         // Actually modify the 'data' array here
         // std::swap(data[currentIndex], data[currentIndex+1]);
+        
+        // Trigger the special audio sound for modifications!
+        is_modifying = true; 
         
         // Return to the loop
         stepState = 0;

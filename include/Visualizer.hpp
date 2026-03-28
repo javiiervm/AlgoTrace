@@ -17,7 +17,13 @@ enum class AppState {
 class Visualizer {
 private:
     raylib::Window window;
+    raylib::AudioDevice audio;
     raylib::Font customFont;
+    raylib::Sound beepSound;
+    raylib::Sound swapSound;
+
+    float currentVolume = 0.5f; // Volume control for sound
+
     std::vector<int> data;
     std::unique_ptr<Algorithm> currentAlgo;
     

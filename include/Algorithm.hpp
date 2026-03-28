@@ -22,7 +22,8 @@ public:
     virtual std::string getName() const = 0; 
     
     // 3. Graph Data: Tell the UI how to color the bars
-    virtual size_t getCurrentIndex() const = 0; 
+    virtual size_t getCurrentIndex() const = 0;
+    virtual bool isModifying() const { return false; }  // Returns true if the current step is modifying the array (for sound purposes)
     virtual bool isEliminated(size_t index) const { return false; }
     
     // 4. Code Visualization: Provide the pseudo-code and active line

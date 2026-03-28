@@ -18,6 +18,13 @@ Visualizer::Visualizer(int w, int h, std::string title) : window(w, h, title) {
 
     // Load custom TTF font for crisp, anti-aliased text scaling.
     customFont = raylib::Font("assets/font.ttf", 64);
+
+    // Load custom sounds
+    beepSound = raylib::Sound("assets/beep.wav");
+    swapSound = raylib::Sound("assets/swap.wav");
+
+    // Set the initial master volume for the entire application
+    SetMasterVolume(currentVolume);
     
     // Populate the algorithm factory on startup
     registerAlgorithms();
@@ -146,6 +153,18 @@ void Visualizer::drawVisualizer() {
         currentAlgo.reset(); // Free memory when leaving the visualizer
         return; 
     }
+    
+    // --- MASTER VOLUME CONTROL ---
+    if (IsKeyPressed(KEY_UP)) {
+        currentVolume += 0.1f; // Increase by 10%
+        if (currentVolume > 1.0f) currentVolume = 1.0f; // Max volume is 1.0
+        SetMasterVolume(currentVolume);
+    }
+    if (IsKeyPressed(KEY_DOWN)) {
+        currentVolume -= 0.1f; // Decrease by 10%
+        if (currentVolume < 0.0f) currentVolume = 0.0f; // Min volume is 0.0 (Muted)
+        SetMasterVolume(currentVolume);
+    }
 
     // 2. Execution Timer: Triggers a logic step only when enough time has passed
     if (!paused && !currentAlgo->isCompleted()) {
@@ -153,6 +172,28 @@ void Visualizer::drawVisualizer() {
         if (stepTimer >= stepDelay) {
             currentAlgo->step();
             stepTimer = 0.0f; // Reset accumulation timer
+
+            // --- DYNAMIC AUDIO FEEDBACK ---
+            int currentIndex = currentAlgo->getCurrentIndex();
+            
+            // Safety check: ensure the index is within bounds before reading data
+            if (currentIndex >= 0 && currentIndex < data.size()) {
+                float value = data[currentIndex];
+                
+                // Calculate pitch dynamically. 
+                // Assumes data values range from roughly 10 to 100.
+                // Pitch maps from 0.5f (low tone) to 2.5f (high tone).
+                float pitch = 0.5f + (value / 100.0f) * 2.0f; 
+
+                // Play the appropriate sound based on the step's semantic action
+                if (currentAlgo->isModifying()) {
+                    swapSound.SetPitch(pitch);
+                    swapSound.Play();
+                } else {
+                    beepSound.SetPitch(pitch);
+                    beepSound.Play();
+                }
+            }
         }
     }
 
@@ -175,8 +216,8 @@ void Visualizer::drawVisualizer() {
     drawGraphArea();
     drawCodeArea();
     
-    // 5. UI Footer
-    std::string footerText = "SPACE: Pause  |  R: Reset  |  BACKSPACE: Menu";
+    // 5. UI Footer (Now with dynamic volume display)
+    std::string footerText = "SPACE: Pause  |  R: Reset  |  BACKSPACE: Menu  |  UP/DOWN: Volume (" + std::to_string((int)(currentVolume * 100)) + "%)";
     float footerWidth = customFont.MeasureText(footerText, 16, 1).x;
     customFont.DrawText(footerText, raylib::Vector2{(w - footerWidth) / 2.0f, h - 30}, 16, 1, raylib::Color::Gray());
 }
