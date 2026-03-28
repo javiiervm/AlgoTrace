@@ -12,6 +12,8 @@
 #include "BubbleSort.hpp"
 #include "HeapSort.hpp"
 #include "StalinSort.hpp"
+#include "GnomeSort.hpp"
+//#include "PancakeSort.hpp"
 
 std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     std::vector<AlgoRegistryEntry> registry;
@@ -20,6 +22,8 @@ std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     registry.push_back({"Bubble Sort", [](std::vector<int>& d) { return std::make_unique<BubbleSort>(d); }});
     registry.push_back({"Heap Sort",   [](std::vector<int>& d) { return std::make_unique<HeapSort>(d); }});
     registry.push_back({"Stalin Sort",   [](std::vector<int>& d) { return std::make_unique<StalinSort>(d); }});
+    registry.push_back({"Gnome Sort", [](std::vector<int>& d) { return std::make_unique<GnomeSort>(d); }});
+    //registry.push_back({"Pancake Sort", [](std::vector<int>& d) { return std::make_unique<PancakeSort>(d); }});
 
     return registry;
 }
