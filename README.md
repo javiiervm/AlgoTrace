@@ -1,7 +1,5 @@
 <div align="center">
-  <!-- <img width="600" height="600" alt="Xavion AI logo" src="https://github.com/javiiervm/Xavion-AI/blob/develop/assets/logo_full.png" /> -->
-  <h1>AlgoTrace</h1>
-  <br />
+  <img width="600" height="600" alt="AlgoTrace logo" src="https://github.com/javiiervm/AlgoTrace/blob/main/assets/logo.png" />
   <p>
     <img src="https://img.shields.io/github/last-commit/javiiervm/AlgoTrace/main" alt="Last Commit" />
     <img src="https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macos-lightgrey" alt="Platform Support" />
@@ -44,24 +42,24 @@ You don't need to install Raylib manually; CMake will fetch it automatically. Yo
 ### Installation & Execution
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/AlgoTrace.git](https://github.com/yourusername/AlgoTrace.git)
+   git clone [https://github.com/javiiervm/AlgoTrace.git](https://github.com/javiiervm/AlgoTrace.git)
    cd AlgoTrace
-````
+   ```
 
-2.  Use the provided Makefile to configure, build, and run the project in one command:
-    ```bash
-    make run
-    ```
+2. Use the provided Makefile to configure, build, and run the project in one command:
+   ```bash
+   make run
+   ```
 
 *(Note: The first time you run this, it will take a moment to download and compile Raylib. Subsequent builds will be near-instant).*
 
 ### Keyboard Controls
 
-  * **SPACE:** Pause / Play the visualization.
-  * **R:** Reset the array and restart the current algorithm.
-  * **BACKSPACE:** Return to the Main Menu.
+* **SPACE:** Pause / Play the visualization.
+* **R:** Reset the array and restart the current algorithm.
+* **BACKSPACE:** Return to the Main Menu.
 
------
+---
 
 ## 📁 Project Structure
 
@@ -84,7 +82,7 @@ AlgoTrace/
 └── Makefile                     # CLI shortcuts
 ```
 
------
+---
 
 ## 👨‍💻 How to Contribute (Adding a New Algorithm)
 
@@ -94,7 +92,7 @@ AlgoTrace is built with a **Factory Pattern** and an **Interface-driven design**
 
 Create a new header (`.hpp`) in the `include/` folder and a source file (`.cpp`) in the `lib/` folder.
 
-  * *Tip: You can copy the structure from `include/TemplateSort.hpp` and `lib/TemplateSort.cpp` if available.*
+* *Tip: You can copy the structure from `include/TemplateSort.hpp` and `lib/TemplateSort.cpp` if available.*
 
 ### Step 2: Inherit from `Algorithm`
 
@@ -131,10 +129,8 @@ In your `.cpp` file, implement the `step()` function.
 
 Open `lib/AlgorithmRegistry.cpp`. This is the central hub for all algorithms.
 
-1.  Include your header file at the top.
-2.  Add your algorithm to the `registry` vector using the lambda factory format:
-
-<!-- end list -->
+1. Include your header file at the top.
+2. Add your algorithm to the `registry` vector using the lambda factory format:
 
 ```cpp
 #include "AlgorithmRegistry.hpp"
@@ -151,7 +147,7 @@ std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
 }
 ```
 
-### Step 5: Run\!
+### Step 5: Run!
 
 Because the `CMakeLists.txt` uses `GLOB_RECURSE CONFIGURE_DEPENDS`, it will automatically detect your new `.cpp` file. Just run:
 
@@ -159,10 +155,4 @@ Because the `CMakeLists.txt` uses `GLOB_RECURSE CONFIGURE_DEPENDS`, it will auto
 make run
 ```
 
-Your algorithm will instantly appear as a fully functional, clickable button in the main menu\!
-
------
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](https://www.google.com/search?q=LICENSE).
+Your algorithm will instantly appear as a fully functional, clickable button in the main menu!
