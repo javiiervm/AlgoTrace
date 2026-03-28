@@ -11,6 +11,7 @@
 // [STEP 1]: Include your headers here
 #include "BubbleSort.hpp"
 #include "HeapSort.hpp"
+#include "StalinSort.hpp"
 
 std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     std::vector<AlgoRegistryEntry> registry;
@@ -18,6 +19,7 @@ std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     // [STEP 2]: Register your algorithm here
     registry.push_back({"Bubble Sort", [](std::vector<int>& d) { return std::make_unique<BubbleSort>(d); }});
     registry.push_back({"Heap Sort",   [](std::vector<int>& d) { return std::make_unique<HeapSort>(d); }});
+    registry.push_back({"Stalin Sort",   [](std::vector<int>& d) { return std::make_unique<StalinSort>(d); }});
 
     return registry;
 }
