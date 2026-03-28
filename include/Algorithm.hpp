@@ -18,8 +18,9 @@ public:
     // 1. Core Logic: Executed once per timer tick
     virtual void step() = 0;                 
     
-    // 2. Info: Display name in the menu and visualizer
+    // 2. Info: Display name and description in the visualizer
     virtual std::string getName() const = 0; 
+    virtual std::string getDescription() const = 0;
     
     // 3. Graph Data: Tell the UI how to color the bars
     virtual size_t getCurrentIndex() const = 0;

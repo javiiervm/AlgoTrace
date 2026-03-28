@@ -45,7 +45,10 @@ public:
     // --- GETTERS (Do not change the signature of these) ---
     
     // Returns the display name for the Main Menu
-    std::string getName() const override { return "Template Sort"; } // <-- CHANGE THIS
+    std::string getName() const override { return "Template Sort"; } // <-- CHANGE
+    
+    // Returns a short, 1-2 sentence explanation of the algorithm's logic
+    std::string getDescription() const override { return "A brief explanation of how this algorithm sorts data."; } // <-- CHANGE
     
     // Returns the index of the bar to be highlighted in Cyan
     size_t getCurrentIndex() const override { return currentIndex; }

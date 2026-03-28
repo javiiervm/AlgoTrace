@@ -1,6 +1,7 @@
 #include "Visualizer.hpp"
 #include <random>
 #include <algorithm> // Required for std::max to handle edge cases in resizing
+#include <sstream> // Required for word-wrap
 
 // --- THEME & COLOR PALETTE ---
 // Defined globally to ensure UI consistency and make future theming easier.
@@ -130,16 +131,19 @@ void Visualizer::drawMenu() {
     EndScissorMode(); 
 }
 
-// --- VISUALIZER RENDERER (RESPONSIVE) ---
+// =========================================================================
+// VISUALIZER RENDERER IMPLEMENTATION
+// =========================================================================
+
+// --- MAIN VISUALIZER LOOP ---
 void Visualizer::drawVisualizer() {
     float w = window.GetWidth();
     float h = window.GetHeight();
 
-    // 1. Input Handling
+    // 1. Input Handling: Core playback and navigation controls
     if (IsKeyPressed(KEY_SPACE)) paused = !paused;
     if (IsKeyPressed(KEY_R)) { 
         resetData(); 
-        // Restart the current algorithm by looking it up in the factory registry
         for(const auto& entry : algorithmRegistry) {
             if(entry.name == currentAlgo->getName()) {
                 currentAlgo = entry.createFunc(data);
@@ -150,42 +154,35 @@ void Visualizer::drawVisualizer() {
     }
     if (IsKeyPressed(KEY_BACKSPACE)) {
         currentState = AppState::MENU;
-        currentAlgo.reset(); // Free memory when leaving the visualizer
+        currentAlgo.reset(); 
         return; 
     }
     
     // --- MASTER VOLUME CONTROL ---
     if (IsKeyPressed(KEY_UP)) {
-        currentVolume += 0.1f; // Increase by 10%
-        if (currentVolume > 1.0f) currentVolume = 1.0f; // Max volume is 1.0
+        currentVolume += 0.1f; 
+        if (currentVolume > 1.0f) currentVolume = 1.0f; 
         SetMasterVolume(currentVolume);
     }
     if (IsKeyPressed(KEY_DOWN)) {
-        currentVolume -= 0.1f; // Decrease by 10%
-        if (currentVolume < 0.0f) currentVolume = 0.0f; // Min volume is 0.0 (Muted)
+        currentVolume -= 0.1f; 
+        if (currentVolume < 0.0f) currentVolume = 0.0f; 
         SetMasterVolume(currentVolume);
     }
 
-    // 2. Execution Timer: Triggers a logic step only when enough time has passed
+    // 2. Execution Timer & Audio Engine
     if (!paused && !currentAlgo->isCompleted()) {
         stepTimer += GetFrameTime();
         if (stepTimer >= stepDelay) {
-            currentAlgo->step();
-            stepTimer = 0.0f; // Reset accumulation timer
+            currentAlgo->step(); 
+            stepTimer = 0.0f;    
 
-            // --- DYNAMIC AUDIO FEEDBACK ---
             int currentIndex = currentAlgo->getCurrentIndex();
             
-            // Safety check: ensure the index is within bounds before reading data
             if (currentIndex >= 0 && currentIndex < data.size()) {
                 float value = data[currentIndex];
-                
-                // Calculate pitch dynamically. 
-                // Assumes data values range from roughly 10 to 100.
-                // Pitch maps from 0.5f (low tone) to 2.5f (high tone).
                 float pitch = 0.5f + (value / 100.0f) * 2.0f; 
 
-                // Play the appropriate sound based on the step's semantic action
                 if (currentAlgo->isModifying()) {
                     swapSound.SetPitch(pitch);
                     swapSound.Play();
@@ -198,9 +195,45 @@ void Visualizer::drawVisualizer() {
     }
 
     // 3. UI Header
+    // A. Main Title: Added more breathing room from the top (Y=25)
     std::string algoName = currentAlgo->getName();
     float titleWidth = customFont.MeasureText(algoName, 32, 2).x;
     customFont.DrawText(algoName, raylib::Vector2{(w - titleWidth) / 2.0f, 25}, 32, 2, raylib::Color::Orange());
+    
+    // B. Subtitle / Description: Shifted down to Y=70 to clear the title completely
+    std::string rawDesc = currentAlgo->getDescription();
+    
+    std::stringstream ss(rawDesc);
+    std::string word;
+    std::string currentLine;
+    
+    float fontSize = 16.0f;
+    float currentDescY = 70.0f; // Increased margin
+    int descSidePadding = 40;   
+    float allowedDescWidth = w - (descSidePadding * 2);
+
+    bool firstWord = true;
+
+    while (ss >> word) {
+        std::string testLine = currentLine;
+        if (!firstWord) testLine += " ";
+        testLine += word;
+
+        float testWidth = customFont.MeasureText(testLine, fontSize, 1).x;
+
+        if (testWidth <= allowedDescWidth) {
+            currentLine = testLine;
+            firstWord = false;
+        } else {
+            float lineWidth = customFont.MeasureText(currentLine, fontSize, 1).x;
+            customFont.DrawText(currentLine, raylib::Vector2{(w - lineWidth) / 2.0f, currentDescY}, fontSize, 1, raylib::Color::LightGray());
+            
+            currentLine = word;
+            currentDescY += 22.0f; 
+        }
+    }
+    float lineWidth = customFont.MeasureText(currentLine, fontSize, 1).x;
+    customFont.DrawText(currentLine, raylib::Vector2{(w - lineWidth) / 2.0f, currentDescY}, fontSize, 1, raylib::Color::LightGray());
     
     // Interactive BACK button
     raylib::Rectangle backBtn(20, 25, 80, 30);
@@ -216,60 +249,77 @@ void Visualizer::drawVisualizer() {
     drawGraphArea();
     drawCodeArea();
     
-    // 5. UI Footer (Now with dynamic volume display)
-    std::string footerText = "SPACE: Pause  |  R: Reset  |  BACKSPACE: Menu  |  UP/DOWN: Volume (" + std::to_string((int)(currentVolume * 100)) + "%)";
-    float footerWidth = customFont.MeasureText(footerText, 16, 1).x;
-    customFont.DrawText(footerText, raylib::Vector2{(w - footerWidth) / 2.0f, h - 30}, 16, 1, raylib::Color::Gray());
+    // 5. UI Footer (Now Responsive)
+    std::string footer1 = "SPACE: Pause  |  R: Reset";
+    std::string footer2 = "BACKSPACE: Menu  |  UP/DOWN: Volume (" + std::to_string((int)(currentVolume * 100)) + "%)";
+    std::string fullFooter = footer1 + "  |  " + footer2;
+    
+    float fullWidth = customFont.MeasureText(fullFooter, 16, 1).x;
+    
+    // If the window is too narrow, split the footer into two rows
+    if (fullWidth < w - 20) {
+        customFont.DrawText(fullFooter, raylib::Vector2{(w - fullWidth) / 2.0f, h - 30}, 16, 1, raylib::Color::Gray());
+    } else {
+        float w1 = customFont.MeasureText(footer1, 16, 1).x;
+        float w2 = customFont.MeasureText(footer2, 16, 1).x;
+        customFont.DrawText(footer1, raylib::Vector2{(w - w1) / 2.0f, h - 45}, 16, 1, raylib::Color::Gray());
+        customFont.DrawText(footer2, raylib::Vector2{(w - w2) / 2.0f, h - 25}, 16, 1, raylib::Color::Gray());
+    }
 }
 
+// --- GRAPHICS PANEL RENDERER ---
 void Visualizer::drawGraphArea() {
     float w = window.GetWidth();
     float h = window.GetHeight();
 
-    // Relative Math: Divide the available screen space equally between both panels
     int pX = 20;
     int pW = w - 40;
-    int pY = 80; 
-    int availableHeight = h - 140; // Account for Header and Footer margins
+    
+    // Shifted down to Y=140 to guarantee space for Title + description
+    int pY = 140; 
+    
+    // Account for 140px header + 90px footer space (230px total) to avoid overlapping UI
+    int availableHeight = h - 230; 
+    if (availableHeight < 100) availableHeight = 100; // Safety clamp for extreme resizing
     int pH = availableHeight / 2;  
     
     raylib::Rectangle(pX, pY, pW, pH).DrawRounded(0.05f, 10, PANEL_COLOR);
     
     float barWidth = (float)(pW - 20) / data.size();
     float maxBarHeight = pH - 40;
-    
-    // Strict baseline so all bars rest exactly on the bottom edge of the panel
     float baseY = pY + pH - 20; 
     
     for (size_t i = 0; i < data.size(); i++) {
         float height = (data[i] / 100.0f) * maxBarHeight;
-        
-        // Force a tiny height for eliminated elements to keep the rounded pill shape visible
         if (currentAlgo->isEliminated(i)) height = 8.0f; 
         
         float posX = pX + 10 + (i * barWidth);
         float posY = baseY - height; 
         
-        // Determine the bar's color based on its semantic state within the algorithm
-        raylib::Color barColor = raylib::Color(170, 70, 210, 255); // Default Unsorted
+        raylib::Color barColor = raylib::Color(170, 70, 210, 255); 
         if (currentAlgo->isEliminated(i)) barColor = COLOR_ELIMINATED;
         else if (i == currentAlgo->getCurrentIndex()) barColor = COLOR_CHECKING;
         else if (i < currentAlgo->getCurrentIndex()) barColor = COLOR_SURVIVOR;
         
-        // Draw the pill shape. std::max prevents drawing glitches if the window is shrunk too far.
         raylib::Rectangle(posX, posY, std::max(1.0f, barWidth - 4), height).DrawRounded(0.5f, 8, barColor);
     }
 }
 
+// --- CODE PANEL RENDERER ---
 void Visualizer::drawCodeArea() {
     float w = window.GetWidth();
     float h = window.GetHeight();
 
     int pX = 20;
     int pW = w - 40;
-    int availableHeight = h - 140;
+    
+    // Math must match Graph Area to ensure perfect 50/50 split
+    int availableHeight = h - 230; 
+    if (availableHeight < 100) availableHeight = 100;
     int panelHeight = availableHeight / 2;
-    int pY = 80 + panelHeight + 15; // Start immediately below the Graph panel
+    
+    // Start immediately below Graph panel + 15px gap
+    int pY = 140 + panelHeight + 15; 
     
     raylib::Rectangle(pX, pY, pW, panelHeight).DrawRounded(0.05f, 10, PANEL_COLOR);
     
@@ -277,19 +327,16 @@ void Visualizer::drawCodeArea() {
     int activeLine = currentAlgo->getCurrentCodeLine();
     int textY = pY + 20;
     
-    // Scissor Mode masks the text, ensuring it never overlaps the footer on tiny screens
     BeginScissorMode(pX, pY, pW, panelHeight);
 
     for (size_t i = 0; i < code.size(); i++) {
-        // Draw the background highlight for the currently executing line
         if (i == activeLine) {
             raylib::Rectangle(pX + 5, textY - 2, pW - 10, 26).DrawRounded(0.1f, 4, CODE_HL_COLOR);
         }
         
         raylib::Color fontColor = (i == activeLine) ? raylib::Color::White() : raylib::Color::LightGray();
         customFont.DrawText(code[i], raylib::Vector2{(float)pX + 15, (float)textY}, 18, 1, fontColor);
-        
-        textY += 30; // Vertical spacing per line
+        textY += 30; 
     }
     
     EndScissorMode();
