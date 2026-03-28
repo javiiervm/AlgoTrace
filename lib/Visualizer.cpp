@@ -13,8 +13,7 @@ const raylib::Color COLOR_ELIMINATED(231, 76, 60, 255);
 const raylib::Color COLOR_CHECKING(82, 173, 226, 255);
 
 Visualizer::Visualizer(int w, int h, std::string title) : window(w, h, title) {
-    // Optional: Uncomment the following line to allow the user to drag and resize 
-    // the window in real-time. The UI math handles responsiveness automatically.
+    // Allow the user to drag and resize the window in real-time. The UI math handles responsiveness automatically.
     // window.SetState(FLAG_WINDOW_RESIZABLE); 
 
     // Load custom TTF font for crisp, anti-aliased text scaling.
