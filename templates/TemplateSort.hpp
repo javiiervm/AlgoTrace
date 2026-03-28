@@ -62,6 +62,6 @@ public:
     // Tells the audio engine if we are currently modifying the array (for the special beep)
     bool isModifying() const override { return is_modifying; }
     
-    // (Optional) Override this if your algorithm eliminates bars (like Stalin Sort)
+    // (Optional) Override this if your algorithm eliminates bars
     // bool isEliminated(size_t index) const override { return false; }
 };
