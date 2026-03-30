@@ -43,6 +43,8 @@ private:
     int completionIndex = 0;  // Current highlighted bar
     float completionTimer = 0.0f;  // Fast timer
 
+    float speedMultiplier = 1.0f;  // 1.0f = 100% (normal)
+
     // Internal utility functions
     void resetData();
     void registerAlgorithms(); // Centralized place to add new algorithms to the menu
