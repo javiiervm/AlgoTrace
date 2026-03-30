@@ -39,6 +39,10 @@ private:
     float stepTimer = 0.0f; 
     float stepDelay = 0.3f; 
 
+    // Final animation variables
+    int completionIndex = 0;  // Current highlighted bar
+    float completionTimer = 0.0f;  // Fast timer
+
     // Internal utility functions
     void resetData();
     void registerAlgorithms(); // Centralized place to add new algorithms to the menu
