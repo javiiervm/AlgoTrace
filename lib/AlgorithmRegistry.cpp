@@ -14,6 +14,7 @@
 #include "StalinSort.hpp"
 #include "GnomeSort.hpp"
 #include "PancakeSort.hpp"
+#include "QuickSort.hpp"
 
 std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     std::vector<AlgoRegistryEntry> registry;
@@ -24,6 +25,7 @@ std::vector<AlgoRegistryEntry> getAvailableAlgorithms() {
     registry.push_back({"Stalin Sort",   [](std::vector<int>& d) { return std::make_unique<StalinSort>(d); }});
     registry.push_back({"Gnome Sort", [](std::vector<int>& d) { return std::make_unique<GnomeSort>(d); }});
     registry.push_back({"Pancake Sort", [](std::vector<int>& d) { return std::make_unique<PancakeSort>(d); }});
+    registry.push_back({"Quick Sort",   [](std::vector<int>& d) { return std::make_unique<QuickSort>(d); }});
 
     return registry;
 }
